@@ -15,20 +15,32 @@ public class ApplicationLoadProperties {
 
     public static void load(String propertiesFilePath) throws IOException {
         Properties props = new Properties();
-        try (FileInputStream fis = new FileInputStream(propertiesFilePath)) {
+        File configFile = new File(propertiesFilePath);
+        File configDir = configFile.getParentFile();
+
+        try (FileInputStream fis = new FileInputStream(configFile)) {
             props.load(fis);
 
             skipLaunchWindow = Boolean.parseBoolean(props.getProperty("skipLaunchWindow", "false"));
-            cacheLocation = props.getProperty("cacheLocation", "");
-            xteaLocation = props.getProperty("xteaLocation", "");
+            cacheLocation = normalizePath(props.getProperty("cacheLocation", ""));
+            xteaLocation = normalizePath(props.getProperty("xteaLocation", ""));
             printDebugConsole = Boolean.parseBoolean(props.getProperty("printDebugConsole", "false"));
+
             if (cacheLocation.isEmpty()) {
                 skipLaunchWindow = false;
                 System.out.println("Making Launch Window Show as its not missing");
             }
         } catch (IOException e) {
-            new File(propertiesFilePath).createNewFile();
             System.out.println("Could not load properties file: " + propertiesFilePath + ". Using defaults.");
+        }
+    }
+
+    private static String normalizePath(String path) {
+        try {
+            File file = new File(path);
+            return file.getCanonicalPath(); // Resolves ../ and symlinks
+        } catch (IOException e) {
+            return path; // Fall back if something goes wrong
         }
     }
 
