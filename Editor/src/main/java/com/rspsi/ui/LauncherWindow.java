@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 
+import com.rspsi.ApplicationLoadProperties;
 import com.rspsi.util.FXUtils;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -43,11 +44,11 @@ public class LauncherWindow extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-
 		java.nio.file.Files.createDirectories(Paths.get(System.getProperty("user.home"), ".rspsi"));
 		File logFile = new File(Paths.get(System.getProperty("user.home"), ".rspsi").toFile(), "log.txt");
-
+		if (!ApplicationLoadProperties.printDebugConsole) {
 			System.setOut(new PrintStream(logFile));
+		}
 
 		singleton = this;
 		this.primaryStage = primaryStage;
@@ -157,6 +158,19 @@ public class LauncherWindow extends Application {
 			window.start(otherStage);
 		});
 
+		if (ApplicationLoadProperties.skipLaunchWindow) {
+			Config.cacheLocation.set(ApplicationLoadProperties.cacheLocation);
+			Settings.properties.put("cacheLocation", ApplicationLoadProperties.cacheLocation);
+			Settings.properties.put("lastCacheLocation", ApplicationLoadProperties.cacheLocation);
+			Settings.putSetting("xteaLoc", ApplicationLoadProperties.xteaLocation);
+			primaryStage.hide();
+			MainWindow window = new MainWindow();
+			Stage otherStage = new Stage();
+			otherStage.setX(primaryStage.getX());
+			otherStage.setY(primaryStage.getY());
+			window.start(otherStage);
+			return;
+		}
 		
 		populatePlugins();
 		WindowControls controls = WindowControls.addWindowControlsFixed(primaryStage, controller.getTopBar(), controller.getControlBox());
@@ -199,7 +213,10 @@ public class LauncherWindow extends Application {
 		return list;
 	}
 	
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		String propertiesFile = args.length > 0 ? args[0] : "settings.properties";
+
+		ApplicationLoadProperties.load(propertiesFile);
 		launch(args);
 	}
 
