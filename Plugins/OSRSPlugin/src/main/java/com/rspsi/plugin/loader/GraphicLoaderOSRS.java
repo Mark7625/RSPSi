@@ -90,6 +90,8 @@ public class GraphicLoaderOSRS extends GraphicLoader {
 				graphic.setAmbience(buffer.readUByte());
 			} else if (opcode == 8) {
 				graphic.setModelShadow(buffer.readUByte());
+			} else if (opcode == 9) {
+				buffer.readOSRSString();
 			} else if (opcode == 40) {
 				int len = buffer.readUByte();
 				int[] originalColours = new int[len];

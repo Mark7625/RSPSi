@@ -25,7 +25,9 @@ public class AnimationDefinitionLoaderOSRS extends AnimationDefinitionLoader {
 		animations = new Animation[highestId + 1];
 		for(File file : archive.files()) {
 			if(file != null && file.getData() != null) {
-				animations[file.getId()] = decode(new Buffer(file.getData()));
+				try {
+					animations[file.getId()] = decode(new Buffer(file.getData()));
+				}catch (Exception ex) {}
 			}
 		}
 		
@@ -131,6 +133,8 @@ public class AnimationDefinitionLoaderOSRS extends AnimationDefinitionLoader {
 			} else if (opcode == 17) {
 				int count = buffer.readUByte();
 				buffer.skip(count);
+			} else if (opcode == 18) {
+				buffer.readOSRSString();
 			} else {
 				System.err.println("Error unrecognised seq config code: " + opcode);
 			}
